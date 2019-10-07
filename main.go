@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
+	"net/http"
+
 	"github.com/gorilla/mux"
 )
 
@@ -10,20 +14,50 @@ type Response struct {
 	Data interface{} `json:"data"`
 }
 
+// Post represents a post
+type Post struct {
+	ID       int      `json:"id"`
+	Title    string   `json:"title"`
+	Text     string   `json:"text"`
+	Images   []string `json:"images"`
+	Verified bool     `json:"verified"`
+	Date     string   `json:"date"`
+}
+
 func main() {
 	router := mux.NewRouter()
 
-	postsRouter := mux.NewRouter()
+	OpenDatabase()
+
+	postsRouter := router.PathPrefix("/posts/").Subrouter()
 	postsRouter.HandleFunc("/{post}", HandlePost)
-	postsRouter.HandleFunc("/{post}/comments", HandleComments)
+	postsRouter.HandleFunc("/{post}/comments", HandleComments).Methods("GET")
+	postsRouter.HandleFunc("/{post}/comments", HandleComment).Methods("POST")
 	postsRouter.HandleFunc("/{post}/vote", HandleVote)
+	postsRouter.Use(PostMiddleware)
 
 	usersRouter := mux.NewRouter()
 	//usersRouter.HandleFunc("/")
 
 	router.HandleFunc("/posts", HandlePosts)
-	router.Handle("/posts/", postsRouter)
+	router.Handle("/", postsRouter)
 	router.Handle("/users/", usersRouter)
 
-	OpenDatabase()
+	http.ListenAndServe(":8080", router)
+}
+
+// WriteResponse writes an response using the Response struct
+func WriteResponse(code int, data interface{}, w http.ResponseWriter) {
+	res := Response{
+		Code: code,
+		Data: data,
+	}
+
+	out, err := json.Marshal(res)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	io.WriteString(w, string(out))
 }
