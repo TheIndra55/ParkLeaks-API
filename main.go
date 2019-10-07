@@ -20,6 +20,7 @@ type Post struct {
 	Title    string   `json:"title"`
 	Text     string   `json:"text"`
 	Images   []string `json:"images"`
+	Stats    Stats    `json:"stats"`
 	Verified bool     `json:"verified"`
 	Date     string   `json:"date"`
 }
@@ -30,6 +31,13 @@ type Comment struct {
 	Text string `json:"text"`
 	User User   `json:"user"`
 	Date string `json:"date"`
+}
+
+// Stats stores stats about the post like views, comment count and score
+type Stats struct {
+	Views    int `json:"views"`
+	Comments int `json:"comments"`
+	Score    int `json:"score"`
 }
 
 // User represents an author on post or comment
