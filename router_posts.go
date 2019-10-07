@@ -78,7 +78,37 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 
 // HandleComments services comments for a single post
 func HandleComments(w http.ResponseWriter, r *http.Request) {
+	rows, err := Db.Query("SELECT reacties.id, reacties.text, reacties.date, namen.name, namen.team, namen.vip, namen.id as `userid` FROM `reacties` "+
+		"INNER JOIN `namen` ON reacties.address=namen.address WHERE `postid` = ? ORDER BY `id` DESC", mux.Vars(r)["post"])
 
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	var comments []Comment
+	for rows.Next() {
+		var (
+			id, userid       int
+			text, date, name string
+			team, vip        bool
+		)
+
+		rows.Scan(&id, &text, &date, &name, &team, &vip, &userid)
+		comments = append(comments, Comment{
+			ID:   id,
+			Text: text,
+			User: User{
+				ID:    userid,
+				Name:  name,
+				Vip:   vip,
+				Staff: team,
+			},
+			Date: date,
+		})
+	}
+
+	WriteResponse(200, comments, w)
 }
 
 // HandleComment takes care of POST on /comments which posts a comment

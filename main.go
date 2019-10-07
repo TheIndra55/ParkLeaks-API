@@ -24,6 +24,22 @@ type Post struct {
 	Date     string   `json:"date"`
 }
 
+// Comment represents a comment on a post
+type Comment struct {
+	ID   int    `json:"id"`
+	Text string `json:"text"`
+	User User   `json:"user"`
+	Date string `json:"date"`
+}
+
+// User represents an author on post or comment
+type User struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Vip   bool   `json:"vip"`
+	Staff bool   `json:"staff"`
+}
+
 func main() {
 	router := mux.NewRouter()
 
