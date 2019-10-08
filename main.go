@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -75,7 +76,7 @@ func main() {
 	router.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	router.Use(MiddleWare)
 
-	http.ListenAndServe(":8080", router)
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 // WriteResponse writes an response using the Response struct
