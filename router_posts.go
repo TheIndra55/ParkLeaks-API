@@ -9,7 +9,7 @@ import (
 
 // HandlePosts function serves /posts which returns all posts
 func HandlePosts(w http.ResponseWriter, r *http.Request) {
-	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date` FROM `posts` WHERE `public` = 1 ORDER BY `id` DESC")
+	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date`, `views` FROM `posts` WHERE `public` = 1 ORDER BY `id` DESC")
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -19,13 +19,13 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	for rows.Next() {
 		var (
-			id                int
+			id, views         int
 			title, text, date string
 			images            string
 			verified          bool
 		)
 
-		rows.Scan(&id, &title, &text, &images, &verified, &date)
+		rows.Scan(&id, &title, &text, &images, &verified, &date, &views)
 		posts = append(posts, Post{
 			ID:       id,
 			Title:    title,
@@ -33,6 +33,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			Verified: verified,
 			Date:     date,
 			Images:   Split(images, ","),
+			Stats:    Stats{Views: views},
 		})
 	}
 
@@ -50,7 +51,7 @@ func Split(str string, sep string) []string {
 
 // HandlePost serves a single post
 func HandlePost(w http.ResponseWriter, r *http.Request) {
-	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date` FROM `posts` WHERE `id` = ?", mux.Vars(r)["post"])
+	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date`, `views` FROM `posts` WHERE `id` = ?", mux.Vars(r)["post"])
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -58,14 +59,14 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id                int
+		id, views         int
 		title, text, date string
 		images            string
 		verified          bool
 	)
 
 	rows.Next()
-	rows.Scan(&id, &title, &text, &images, &verified, &date)
+	rows.Scan(&id, &title, &text, &images, &verified, &date, &views)
 
 	WriteResponse(200, Post{
 		ID:       id,
@@ -76,6 +77,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		Images:   Split(images, ","),
 		Stats: Stats{
 			Score: CountVotes(id),
+			Views: views,
 		},
 	}, w)
 }
