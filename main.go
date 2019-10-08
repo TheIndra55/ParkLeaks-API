@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 // Response is top level root of api response
@@ -43,7 +44,7 @@ type Stats struct {
 
 // User represents an author on post or comment
 type User struct {
-	ID      int    `json:"id"`
+	ID      *int   `json:"id"`
 	Name    string `json:"name"`
 	Vip     bool   `json:"vip"`
 	Staff   bool   `json:"staff"`
