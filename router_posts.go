@@ -107,7 +107,7 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 		comments = append(comments, Comment{
 			ID:   id,
 			Text: text,
-			User: User{
+			User: &User{
 				ID:    userid,
 				Name:  name,
 				Vip:   vip,

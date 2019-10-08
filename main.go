@@ -30,7 +30,7 @@ type Post struct {
 type Comment struct {
 	ID   int    `json:"id"`
 	Text string `json:"text"`
-	User User   `json:"user"`
+	User *User  `json:"user,omitempty"`
 	Date string `json:"date"`
 }
 
@@ -43,10 +43,11 @@ type Stats struct {
 
 // User represents an author on post or comment
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Vip   bool   `json:"vip"`
-	Staff bool   `json:"staff"`
+	ID      int    `json:"id"`
+	Name    string `json:"name"`
+	Vip     bool   `json:"vip"`
+	Staff   bool   `json:"staff"`
+	Address string `json:"-"`
 }
 
 func main() {
@@ -61,12 +62,12 @@ func main() {
 	postsRouter.HandleFunc("/{post}/vote", HandleVote).Methods("POST")
 	postsRouter.Use(PostMiddleware)
 
-	usersRouter := mux.NewRouter()
-	//usersRouter.HandleFunc("/")
+	usersRouter := router.PathPrefix("/users/").Subrouter()
+	usersRouter.HandleFunc("/{user}", HandleUser).Methods("GET")
 
 	router.HandleFunc("/posts", HandlePosts).Methods("GET")
 	router.Handle("/", postsRouter)
-	router.Handle("/users/", usersRouter)
+	router.Handle("/", usersRouter)
 
 	router.NotFoundHandler = http.HandlerFunc(NotFound)
 	router.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
