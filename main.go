@@ -10,8 +10,9 @@ import (
 
 // Response is top level root of api response
 type Response struct {
-	Code int         `json:"code"`
-	Data interface{} `json:"data"`
+	Code   int         `json:"code"`
+	Data   interface{} `json:"data,omitempty"`
+	Errors []string    `json:"errors,omitempty"`
 }
 
 // Post represents a post
@@ -54,18 +55,22 @@ func main() {
 	OpenDatabase()
 
 	postsRouter := router.PathPrefix("/posts/").Subrouter()
-	postsRouter.HandleFunc("/{post}", HandlePost)
+	postsRouter.HandleFunc("/{post}", HandlePost).Methods("GET")
 	postsRouter.HandleFunc("/{post}/comments", HandleComments).Methods("GET")
 	postsRouter.HandleFunc("/{post}/comments", HandleComment).Methods("POST")
-	postsRouter.HandleFunc("/{post}/vote", HandleVote)
+	postsRouter.HandleFunc("/{post}/vote", HandleVote).Methods("POST")
 	postsRouter.Use(PostMiddleware)
 
 	usersRouter := mux.NewRouter()
 	//usersRouter.HandleFunc("/")
 
-	router.HandleFunc("/posts", HandlePosts)
+	router.HandleFunc("/posts", HandlePosts).Methods("GET")
 	router.Handle("/", postsRouter)
 	router.Handle("/users/", usersRouter)
+
+	router.NotFoundHandler = http.HandlerFunc(NotFound)
+	router.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
+	router.Use(MiddleWare)
 
 	http.ListenAndServe(":8080", router)
 }
@@ -84,4 +89,25 @@ func WriteResponse(code int, data interface{}, w http.ResponseWriter) {
 	}
 
 	io.WriteString(w, string(out))
+}
+
+// WriteErrors writes an errored response with multiple errors
+func WriteErrors(code int, errors []string, w http.ResponseWriter) {
+	res := Response{
+		Code:   code,
+		Errors: errors,
+	}
+
+	out, err := json.Marshal(res)
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	io.WriteString(w, string(out))
+}
+
+// WriteError writes and error response with a single error
+func WriteError(code int, err string, w http.ResponseWriter) {
+	WriteErrors(code, []string{err}, w)
 }

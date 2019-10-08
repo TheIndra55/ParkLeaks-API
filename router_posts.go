@@ -16,7 +16,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date` FROM `posts` WHERE `public` = 1 ORDER BY `id` DESC")
 	if err != nil {
 		w.WriteHeader(500)
-		WriteResponse(500, err, w)
+		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
 		return
 	}
 
@@ -57,6 +57,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date` FROM `posts` WHERE `id` = ?", mux.Vars(r)["post"])
 	if err != nil {
 		w.WriteHeader(500)
+		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
 		return
 	}
 
@@ -90,6 +91,7 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(500)
+		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
 		return
 	}
 
@@ -133,6 +135,7 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(400)
+		WriteError(400, "The body couldn't be read", w)
 		return
 	}
 
@@ -140,6 +143,7 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &vote)
 	if err != nil {
 		w.WriteHeader(400)
+		WriteError(400, "The body was an invalid JSON payload", w)
 		return
 	}
 
@@ -156,6 +160,7 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 		rows, err := Db.Query("SELECT COUNT(*) FROM `votes` WHERE `postid` = ? AND `address` = ?", post, address)
 		if err != nil {
 			w.WriteHeader(500)
+			WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
 			return
 		}
 
@@ -178,6 +183,7 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 	default:
 		// invalid action
 		w.WriteHeader(400)
+		WriteError(400, "An invalid action was specified", w)
 		return
 	}
 
