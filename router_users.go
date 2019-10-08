@@ -2,8 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -78,6 +80,20 @@ func DoesExists(user User) (bool, error) {
 	rows.Scan(&count)
 
 	return (count > 0), nil
+}
+
+// GenerateAccount creates an account with a random username
+func GenerateAccount(ip string) {
+	rand.Seed(time.Now().Unix())
+	// on parkleaks the user gets assigned a random name from the list which is connected to their ip address
+	random := rand.Intn(len(Names))
+
+	CreateAccount(ip, Names[random])
+}
+
+// CreateAccount creates an account with provided name
+func CreateAccount(ip string, name string) {
+	Db.Query("INSERT INTO `namen` (`address`, `name`) VALUES (?, ?)", ip, name)
 }
 
 // GetComments returns all comments by a user

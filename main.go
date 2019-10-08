@@ -55,6 +55,7 @@ func main() {
 	router := mux.NewRouter()
 
 	OpenDatabase()
+	GetNames()
 
 	postsRouter := router.PathPrefix("/posts/").Subrouter()
 	postsRouter.HandleFunc("/{post}", HandlePost).Methods("GET")

@@ -80,12 +80,14 @@ func HandleComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if exists {
-		Db.Query("INSERT INTO `reacties` (postid, text, date, address) VALUES (?, ?, NOW(), ?)", post, comment.Comment, ip)
-	} else {
-		// create user
-		// TODO
+	if !exists {
+		// generate a new account if user doesn't have account yet
+		GenerateAccount(ip)
 	}
+
+	Db.Query("INSERT INTO `reacties` (postid, text, date, address) VALUES (?, ?, NOW(), ?)", post, comment.Comment, ip)
+
+	WriteResponse(200, nil, w)
 }
 
 // CheckCaptcha checks a captcha token at the reCAPTCHA provider
