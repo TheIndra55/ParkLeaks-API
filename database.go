@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var (
@@ -15,7 +17,7 @@ var (
 
 // OpenDatabase opens the database connection
 func OpenDatabase() {
-	Db, err = sql.Open("mysql", "root@tcp(localhost)/parkleaks")
+	Db, err = sql.Open("mysql", os.Getenv("MYSQL_DSN"))
 	if err != nil {
 		log.Fatal(err)
 	}
