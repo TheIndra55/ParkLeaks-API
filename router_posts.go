@@ -9,7 +9,8 @@ import (
 
 // HandlePosts function serves /posts which returns all posts
 func HandlePosts(w http.ResponseWriter, r *http.Request) {
-	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date`, `views` FROM `posts` WHERE `public` = 1 ORDER BY `id` DESC")
+	rows, err := Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, " +
+		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE `public` = 1 ORDER BY `id` DESC")
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -19,13 +20,13 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	for rows.Next() {
 		var (
-			id, views         int
-			title, text, date string
-			images            string
-			verified          bool
+			id, views, userid       int
+			title, text, date, name string
+			images                  string
+			verified, vip, team     bool
 		)
 
-		rows.Scan(&id, &title, &text, &images, &verified, &date, &views)
+		rows.Scan(&id, &title, &text, &images, &verified, &date, &views, &name, &userid, &vip, &team)
 		posts = append(posts, Post{
 			ID:       id,
 			Title:    title,
@@ -34,6 +35,12 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			Date:     date,
 			Images:   Split(images, ","),
 			Stats:    Stats{Views: views},
+			User: User{
+				ID:    &userid,
+				Name:  name,
+				Vip:   vip,
+				Staff: team,
+			},
 		})
 	}
 
@@ -51,7 +58,8 @@ func Split(str string, sep string) []string {
 
 // HandlePost serves a single post
 func HandlePost(w http.ResponseWriter, r *http.Request) {
-	rows, err := Db.Query("SELECT `id`, `titel`, `text`, `images`, `verified`, `date`, `views` FROM `posts` WHERE `id` = ?", mux.Vars(r)["post"])
+	rows, err := Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, "+
+		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE posts.id = ?", mux.Vars(r)["post"])
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -59,14 +67,14 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id, views         int
-		title, text, date string
-		images            string
-		verified          bool
+		id, views, userid       int
+		title, text, date, name string
+		images                  string
+		verified, vip, team     bool
 	)
 
 	rows.Next()
-	rows.Scan(&id, &title, &text, &images, &verified, &date, &views)
+	rows.Scan(&id, &title, &text, &images, &verified, &date, &views, &name, &userid, &vip, &team)
 
 	WriteResponse(200, Post{
 		ID:       id,
@@ -78,6 +86,12 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		Stats: Stats{
 			Score: CountVotes(id),
 			Views: views,
+		},
+		User: User{
+			ID:    &userid,
+			Name:  name,
+			Vip:   vip,
+			Staff: team,
 		},
 	}, w)
 }

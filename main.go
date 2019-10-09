@@ -24,6 +24,7 @@ type Post struct {
 	Text     string   `json:"text"`
 	Images   []string `json:"images"`
 	Stats    Stats    `json:"stats"`
+	User     User     `json:"author"`
 	Verified bool     `json:"verified"`
 	Date     string   `json:"date"`
 }
@@ -32,7 +33,7 @@ type Post struct {
 type Comment struct {
 	ID   int    `json:"id"`
 	Text string `json:"text"`
-	User *User  `json:"user,omitempty"`
+	User *User  `json:"author,omitempty"`
 	Date string `json:"date"`
 }
 
