@@ -32,6 +32,7 @@ func PostMiddleware(next http.Handler) http.Handler {
 		if count > 0 {
 			next.ServeHTTP(w, r)
 		} else {
+			w.WriteHeader(404)
 			WriteError(404, "The requested post was not found", w)
 		}
 	})
