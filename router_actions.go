@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -57,7 +56,8 @@ func HandleComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	//ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	ip := r.Header.Get("CF-Connecting-IP")
 	post := mux.Vars(r)["post"]
 
 	passed, err := CheckCaptcha(comment.Response, ip)
@@ -135,7 +135,8 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	address, _, _ := net.SplitHostPort(r.RemoteAddr)
+	//address, _, _ := net.SplitHostPort(r.RemoteAddr)
+	address := r.Header.Get("CF-Connecting-IP")
 	post := mux.Vars(r)["post"]
 
 	switch vote.Action {
