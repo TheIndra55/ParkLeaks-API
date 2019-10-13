@@ -34,6 +34,8 @@ func HandleUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := Db.Query("SELECT `id`, `name`, `team`, `vip`, `address` FROM `namen` WHERE `id` = ?", userid)
+	defer rows.Close()
+
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -67,8 +69,10 @@ func DoesExists(user User) (bool, error) {
 
 	if user.ID != nil {
 		rows, err = Db.Query("SELECT COUNT(*) FROM `namen` WHERE `id` = ?", user.ID)
+		defer rows.Close()
 	} else {
 		rows, err = Db.Query("SELECT COUNT(*) FROM `namen` WHERE `address` = ?", user.Address)
+		defer rows.Close()
 	}
 
 	if err != nil {
@@ -93,12 +97,15 @@ func GenerateAccount(ip string) {
 
 // CreateAccount creates an account with provided name
 func CreateAccount(ip string, name string) {
-	Db.Query("INSERT INTO `namen` (`address`, `name`) VALUES (?, ?)", ip, name)
+	rows, _ := Db.Query("INSERT INTO `namen` (`address`, `name`) VALUES (?, ?)", ip, name)
+	rows.Close()
 }
 
 // GetComments returns all comments by a user
 func GetComments(user User) []Comment {
 	rows, _ := Db.Query("SELECT `id`, `text`, `date` FROM `reacties` WHERE `address` = ? ORDER BY `id` DESC", user.Address)
+	defer rows.Close()
+
 	var comments []Comment
 
 	for rows.Next() {

@@ -85,7 +85,8 @@ func HandleComment(w http.ResponseWriter, r *http.Request) {
 		GenerateAccount(ip)
 	}
 
-	Db.Query("INSERT INTO `reacties` (postid, text, date, address) VALUES (?, ?, NOW(), ?)", post, comment.Comment, ip)
+	rows, _ := Db.Query("INSERT INTO `reacties` (postid, text, date, address) VALUES (?, ?, NOW(), ?)", post, comment.Comment, ip)
+	defer rows.Close()
 
 	WriteResponse(200, nil, w)
 }
@@ -142,11 +143,14 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 	switch vote.Action {
 	case 0:
 		// remove vote
-		Db.Query("DELETE FROM `votes` WHERE `postid` = ? AND `address` = ?", post, address)
+		docs, _ := Db.Query("DELETE FROM `votes` WHERE `postid` = ? AND `address` = ?", post, address)
+		docs.Close()
 	case -1, 1:
 		// vote
 		// check if user already voted
 		rows, err := Db.Query("SELECT COUNT(*) FROM `votes` WHERE `postid` = ? AND `address` = ?", post, address)
+		defer rows.Close()
+		
 		if err != nil {
 			w.WriteHeader(500)
 			WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -164,10 +168,12 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 
 		if count > 0 {
 			// already voted update
-			Db.Query("UPDATE `votes` SET `action` = ? WHERE `postid` = ? AND `address` = ?", vote.Action, post, address)
+			rows, _ := Db.Query("UPDATE `votes` SET `action` = ? WHERE `postid` = ? AND `address` = ?", vote.Action, post, address)
+			defer rows.Close()
 		} else {
 			// insert
-			Db.Query("INSERT INTO `votes` (`postid`, `address`, `action`) VALUES(?, ?, ?)", post, address, vote.Action)
+			rows, _ := Db.Query("INSERT INTO `votes` (`postid`, `address`, `action`) VALUES(?, ?, ?)", post, address, vote.Action)
+			defer rows.Close()
 		}
 	default:
 		// invalid action

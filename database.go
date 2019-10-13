@@ -27,6 +27,8 @@ func OpenDatabase() {
 // GetNames fetches all names from database and stores them in memory
 func GetNames() {
 	rows, err := Db.Query("SELECT `name` from `names`")
+	defer rows.Close()
+
 	if err != nil {
 		log.Fatal(err)
 	}

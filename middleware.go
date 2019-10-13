@@ -19,6 +19,7 @@ func MiddleWare(next http.Handler) http.Handler {
 func PostMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		docs, err := Db.Query("SELECT COUNT(*) FROM `posts` WHERE `id` = ? AND `public` = 1", mux.Vars(r)["post"])
+		defer docs.Close()
 		if err != nil {
 			w.WriteHeader(500)
 			WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)

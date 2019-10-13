@@ -11,6 +11,8 @@ import (
 func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	rows, err := Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, " +
 		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE `public` = 1 ORDER BY `id` DESC")
+	defer rows.Close()
+
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -60,6 +62,8 @@ func Split(str string, sep string) []string {
 func HandlePost(w http.ResponseWriter, r *http.Request) {
 	rows, err := Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, "+
 		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE posts.id = ?", mux.Vars(r)["post"])
+	defer rows.Close()
+
 	if err != nil {
 		w.WriteHeader(500)
 		WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -100,6 +104,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 func HandleComments(w http.ResponseWriter, r *http.Request) {
 	rows, err := Db.Query("SELECT reacties.id, reacties.text, reacties.date, namen.name, namen.team, namen.vip, namen.id as `userid` FROM `reacties` "+
 		"INNER JOIN `namen` ON reacties.address=namen.address WHERE `postid` = ? ORDER BY `id` DESC", mux.Vars(r)["post"])
+	defer rows.Close()
 
 	if err != nil {
 		w.WriteHeader(500)
@@ -135,6 +140,7 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 // CountVotes returns the score of a post
 func CountVotes(post int) int {
 	rows, _ := Db.Query("SELECT COUNT(CASE WHEN `action` = 0 THEN 1 END), COUNT(CASE WHEN `action` = 1 THEN 1 END) FROM `votes` WHERE `postid` = ?", post)
+	defer rows.Close()
 
 	var down, up int
 	rows.Next()
