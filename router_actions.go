@@ -150,7 +150,7 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 		// check if user already voted
 		rows, err := Db.Query("SELECT COUNT(*) FROM `votes` WHERE `postid` = ? AND `address` = ?", post, address)
 		defer rows.Close()
-		
+
 		if err != nil {
 			w.WriteHeader(500)
 			WriteErrors(500, []string{"An internal server error occured", "Something went wrong while retrieving the data"}, w)
@@ -184,5 +184,7 @@ func HandleVote(w http.ResponseWriter, r *http.Request) {
 
 	// return updated vote count
 	id, _ := strconv.Atoi(post)
-	WriteResponse(200, CountVotes(id), w)
+	WriteResponse(200, struct {
+		Score int `json:"score"`
+	}{CountVotes(id)}, w)
 }
