@@ -22,6 +22,8 @@ func OpenDatabase() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	Db.SetMaxOpenConns(20)
 }
 
 // GetNames fetches all names from database and stores them in memory
