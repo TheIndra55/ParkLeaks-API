@@ -1,6 +1,6 @@
 # ParkLeaks API
 
-The ParkLeaks API is used to interact between any application (including the official app) to interact with ParkLeaks.nl, the following repository contains the code powering the API.
+The ParkLeaks API is used to interact between any application (including the official app) with ParkLeaks.nl, the following repository contains the code powering the API.
 
 ## Dependencies
 - [gorilla/mux](https://github.com/gorilla/mux)
@@ -14,7 +14,7 @@ Now run the follow command
 ```bash
 go build -i
 ```
-This will will give you a single binary  which you can now run
+This will will give you a single binary which you can now run
 
 ## License
 
