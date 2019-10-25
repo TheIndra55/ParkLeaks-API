@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -22,10 +23,11 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 	var posts []Post
 	for rows.Next() {
 		var (
-			id, views, userid       int
-			title, text, date, name string
-			images                  string
-			verified, vip, team     bool
+			id, views, userid   int
+			title, text, name   string
+			images              string
+			verified, vip, team bool
+			date                time.Time
 		)
 
 		rows.Scan(&id, &title, &text, &images, &verified, &date, &views, &name, &userid, &vip, &team)
@@ -71,10 +73,11 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id, views, userid       int
-		title, text, date, name string
-		images                  string
-		verified, vip, team     bool
+		id, views, userid   int
+		title, text, name   string
+		images              string
+		verified, vip, team bool
+		date                time.Time
 	)
 
 	rows.Next()
@@ -115,9 +118,10 @@ func HandleComments(w http.ResponseWriter, r *http.Request) {
 	var comments []Comment
 	for rows.Next() {
 		var (
-			id, userid       int
-			text, date, name string
-			team, vip        bool
+			id, userid int
+			text, name string
+			team, vip  bool
+			date       time.Time
 		)
 
 		rows.Scan(&id, &text, &date, &name, &team, &vip, &userid)

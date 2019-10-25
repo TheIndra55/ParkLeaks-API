@@ -110,8 +110,9 @@ func GetComments(user User) []Comment {
 
 	for rows.Next() {
 		var (
-			id         int
-			text, date string
+			id   int
+			text string
+			date time.Time
 		)
 		rows.Scan(&id, &text, &date)
 		comments = append(comments, Comment{

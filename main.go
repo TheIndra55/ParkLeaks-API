@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/joho/godotenv/autoload"
@@ -19,22 +20,22 @@ type Response struct {
 
 // Post represents a post
 type Post struct {
-	ID       int      `json:"id"`
-	Title    string   `json:"title"`
-	Text     string   `json:"text"`
-	Images   []string `json:"images"`
-	Stats    Stats    `json:"stats"`
-	User     User     `json:"author"`
-	Verified bool     `json:"verified"`
-	Date     string   `json:"date"`
+	ID       int       `json:"id"`
+	Title    string    `json:"title"`
+	Text     string    `json:"text"`
+	Images   []string  `json:"images"`
+	Stats    Stats     `json:"stats"`
+	User     User      `json:"author"`
+	Verified bool      `json:"verified"`
+	Date     time.Time `json:"date"`
 }
 
 // Comment represents a comment on a post
 type Comment struct {
-	ID   int    `json:"id"`
-	Text string `json:"text"`
-	User *User  `json:"author,omitempty"`
-	Date string `json:"date"`
+	ID   int       `json:"id"`
+	Text string    `json:"text"`
+	User *User     `json:"author,omitempty"`
+	Date time.Time `json:"date"`
 }
 
 // Stats stores stats about the post like views, comment count and score
