@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -78,7 +79,7 @@ func main() {
 	router.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
 	router.Use(MiddleWare)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(os.Getenv("LISTEN"), router))
 }
 
 // WriteResponse writes an response using the Response struct
