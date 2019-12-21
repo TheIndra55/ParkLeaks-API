@@ -72,11 +72,11 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id, views, userid, vote, votecount int
-		title, text, name                  string
-		images                             string
-		verified, vip, team                bool
-		date                               time.Time
+		id, views, userid, vote int
+		title, text, name       string
+		images                  string
+		verified, vip, team     bool
+		date                    time.Time
 	)
 
 	rows.Next()
@@ -86,17 +86,15 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	ip := r.Header.Get("CF-Connecting-IP")
 
 	// get user voted state
-	rows, _ = Db.Query("SELECT COUNT(*), `action` FROM `votes` WHERE `postid` = ? and `address` = ?", mux.Vars(r)["post"], ip)
-	defer rows.Close()
-
-	rows.Next()
-	rows.Scan(&votecount, &vote)
+	err = Db.QueryRow("SELECT `action` FROM `votes` WHERE `postid` = ? and `address` = ?", mux.Vars(r)["post"], ip).Scan(&vote)
 
 	// TODO: refactor
 	if vote == 0 {
 		vote = -1
 	}
-	if votecount == 0 {
+
+	// if error just assume no vote so 0
+	if err != nil {
 		vote = 0
 	}
 
