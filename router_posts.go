@@ -64,7 +64,6 @@ func Split(str string, sep string) []string {
 func HandlePost(w http.ResponseWriter, r *http.Request) {
 	rows, err := Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, "+
 		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE posts.id = ?", mux.Vars(r)["post"])
-	defer rows.Close()
 
 	if err != nil {
 		w.WriteHeader(500)
@@ -73,15 +72,33 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		id, views, userid   int
-		title, text, name   string
-		images              string
-		verified, vip, team bool
-		date                time.Time
+		id, views, userid, vote, votecount int
+		title, text, name                  string
+		images                             string
+		verified, vip, team                bool
+		date                               time.Time
 	)
 
 	rows.Next()
 	rows.Scan(&id, &title, &text, &images, &verified, &date, &views, &name, &userid, &vip, &team)
+	rows.Close()
+
+	ip := r.Header.Get("CF-Connecting-IP")
+
+	// get user voted state
+	rows, _ = Db.Query("SELECT COUNT(*), `action` FROM `votes` WHERE `postid` = ? and `address` = ?", mux.Vars(r)["post"], ip)
+	defer rows.Close()
+
+	rows.Next()
+	rows.Scan(&votecount, &vote)
+
+	// TODO: refactor
+	if vote == 0 {
+		vote = -1
+	}
+	if votecount == 0 {
+		vote = 0
+	}
 
 	WriteResponse(200, Post{
 		ID:       id,
@@ -100,6 +117,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 			Vip:   vip,
 			Staff: team,
 		},
+		Vote: vote,
 	}, w)
 }
 

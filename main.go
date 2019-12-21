@@ -1,5 +1,13 @@
 package main
 
+/*
+	TODO
+
+	- move all error handling to middleware, just throw exceptions
+	- ip header to middleware
+	- refactor *lot* of code
+*/
+
 import (
 	"encoding/json"
 	"io"
@@ -29,6 +37,7 @@ type Post struct {
 	User     User      `json:"author"`
 	Verified bool      `json:"verified"`
 	Date     time.Time `json:"date"`
+	Vote     int       `json:"__vote"`
 }
 
 // Comment represents a comment on a post
