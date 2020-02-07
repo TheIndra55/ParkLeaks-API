@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/hmac"
 	"crypto/sha1"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -18,8 +19,30 @@ import (
 
 // HandlePosts function serves /posts which returns all posts
 func HandlePosts(w http.ResponseWriter, r *http.Request) {
-	rows, err := Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, " +
-		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE `public` = 1 ORDER BY `id` DESC")
+	var (
+		page int
+		err  error
+		rows *sql.Rows
+	)
+	param, ok := r.URL.Query()["page"]
+
+	if !ok || len(param) == 0 {
+		// if param doesn't exist default to page 0
+		page = 0
+	} else if page, err = strconv.Atoi(param[0]); err != nil {
+		w.WriteHeader(400)
+		WriteError(500, "Invalid value for parameter 'page', should be an integer", w)
+		return
+	}
+
+	// hardcoded limit of 8
+	// TODO: user-defined limit
+	limit := 8
+	// calculate offset and pass to query
+	offset := page * limit
+
+	rows, err = Db.Query("SELECT posts.id, posts.titel, posts.text, posts.images, posts.verified, posts.date, posts.views, namen.name, namen.id as userid, namen.vip, "+
+		"namen.team FROM `posts` INNER JOIN `namen` ON posts.address=namen.address WHERE `public` = 1 ORDER BY `id` DESC LIMIT ? OFFSET ?", limit, offset)
 	defer rows.Close()
 
 	if err != nil {
