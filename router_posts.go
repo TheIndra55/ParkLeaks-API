@@ -31,7 +31,7 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 		page = 0
 	} else if page, err = strconv.Atoi(param[0]); err != nil {
 		w.WriteHeader(400)
-		WriteError(500, "Invalid value for parameter 'page', should be an integer", w)
+		WriteError(400, "Invalid value for parameter 'page', should be an integer", w)
 		return
 	}
 
