@@ -1,7 +1,15 @@
 package main
 
 import (
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/hex"
+	"fmt"
 	"net/http"
+	"net/url"
+	"os"
+	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -28,16 +36,29 @@ func HandlePosts(w http.ResponseWriter, r *http.Request) {
 			images              string
 			verified, vip, team bool
 			date                time.Time
+			thumbnails          []string
 		)
 
 		rows.Scan(&id, &title, &text, &images, &verified, &date, &views, &name, &userid, &vip, &team)
+
+		splitted := Split(images, ",")
+
+		// return array with only 1 thumbnail
+		if len(splitted) == 0 {
+			thumbnails = []string{}
+		} else {
+			thumbnails = []string{
+				GenerateThumbnail(fmt.Sprintf("https://parkleaks.nl/%s", splitted[0]), 300),
+			}
+		}
+
 		posts = append(posts, Post{
 			ID:       id,
 			Title:    title,
 			Text:     text,
 			Verified: verified,
 			Date:     date,
-			Images:   Split(images, ","),
+			Images:   thumbnails,
 			Stats:    Stats{Views: views},
 			User: User{
 				ID:    &userid,
@@ -58,6 +79,30 @@ func Split(str string, sep string) []string {
 	}
 
 	return strings.Split(str, sep)
+}
+
+// GenerateThumbnail generates the thumbnail url for an image url and scale
+func GenerateThumbnail(image string, scale int) string {
+	hash := Hash(image)
+	hex := hex.EncodeToString([]byte(image))
+
+	url := url.URL{
+		Scheme:   "https",
+		Host:     "user.blazor.nl",
+		Path:     path.Join("scale", hash, hex),
+		RawQuery: fmt.Sprintf("scale=%d&signature=%s", scale, Hash(strconv.Itoa(scale))),
+	}
+
+	return url.String()
+}
+
+// Hash returns a new HMAC hash of the given value using key from ENV
+func Hash(value string) string {
+	key := []byte(os.Getenv("CAMO_KEY"))
+	hash := hmac.New(sha1.New, key)
+
+	hash.Write([]byte(value))
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 // HandlePost serves a single post
