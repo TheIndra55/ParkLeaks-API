@@ -166,10 +166,12 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		vote = 0
 	}
 	
-	for i, val := range images {
+	imageList := Split(images, ",")
+	
+	/*for i, val := range imageList {
 		prefix := "https://parkleaks.nl/"
-		images[i] = prefix+val
-	}
+		imageList[i] = prefix+string(val)
+	}*/
 
 	WriteResponse(200, Post{
 		ID:       id,
@@ -177,7 +179,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 		Text:     text,
 		Verified: verified,
 		Date:     date,
-		Images:   Split(images, ","),
+		Images:   imageList,
 		Stats: Stats{
 			Score: CountVotes(id),
 			Views: views,
