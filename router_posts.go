@@ -168,10 +168,10 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	
 	imageList := Split(images, ",")
 	
-	/*for i, val := range imageList {
+	for i, val := range imageList {
 		prefix := "https://parkleaks.nl/"
 		imageList[i] = prefix+string(val)
-	}*/
+	}
 
 	WriteResponse(200, Post{
 		ID:       id,
