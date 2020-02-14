@@ -165,6 +165,11 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		vote = 0
 	}
+	
+	for i, val := range images {
+		prefix := "https://parkleaks.nl/"
+		images[x] = prefix+images[x]
+	}
 
 	WriteResponse(200, Post{
 		ID:       id,
