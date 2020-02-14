@@ -168,7 +168,7 @@ func HandlePost(w http.ResponseWriter, r *http.Request) {
 	
 	for i, val := range images {
 		prefix := "https://parkleaks.nl/"
-		images[x] = prefix+images[x]
+		images[i] = prefix+val
 	}
 
 	WriteResponse(200, Post{
